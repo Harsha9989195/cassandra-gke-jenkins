@@ -1,0 +1,8 @@
+.terraform/
+*.tfstate*
+*.tfvars
+*.json
+*.key
+*.pem
+.kube/
+*.zip
