@@ -9,7 +9,7 @@ gcloud services enable container.googleapis.com
 
 gcloud container clusters create cassandra-gke
 --zone "$ZONE"
---num-nodes 3
+--num-nodes 1
 --machine-type e2-standard-2
 --disk-type pd-ssd --disk-size 50
 --labels=workload=cassandra
