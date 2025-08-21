@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
-PROJECT_ID="$(gcloud config get-value project)"
+PROJECT_ID="${PROJECT_ID:-$(gcloud config get-value project)}"
+REGION="${REGION:-us-central1}"
 ZONE="${ZONE:-us-central1-a}"
 
-echo "Using project: $PROJECT_ID zone: $ZONE"
+echo "Using project: $PROJECT_ID  region: $REGION  zone: $ZONE"
 gcloud services enable container.googleapis.com
 
 gcloud container clusters create cassandra-gke
