@@ -1,29 +1,22 @@
-  pipeline {
-  agent {
-    kubernetes {
-      yaml """
-apiVersion: v1
-kind: Pod
-metadata:
-  labels:
-    some-label: cassandra-pipeline
-spec:
-  containers:
-  - name: jenkins-gcloud
-    image: us-central1-docker.pkg.dev/white-inscriber-469614-a1/jenkins-images/jenkins-gcloud-kubectl
-    command: [ "cat" ]
-    tty: true
-"""
-    }
-  }
-
+pipeline {
+  agent any
 
   environment {
-    PROJECT_ID = 'white-inscriber-469614-a1'          
-    REGION     = 'us-central1'
-    ZONE       = 'us-central1-a'
-    CLUSTER    = 'cassandra-gke'
+    PROJECT_ID = "white-inscriber-469614-a1"
+    REGION = "us-central1"
+    CLUSTER_NAME = "cassandra-cluster"
+    GCP_KEY = credentials('gcp-sa-key')
+    IMAGE = "us-central1-docker.pkg.dev/white-inscriber-469614-a1/jenkins-images/jenkins-gcloud-kubectl"
   }
+
+  stages {
+    stage('Run in Docker') {
+      agent {
+        docker {
+          image "${IMAGE}"
+          args '-u root:root'
+        }
+      }
 
   stages {
     stage('Clone Repo') {
