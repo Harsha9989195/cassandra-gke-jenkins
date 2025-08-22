@@ -16,21 +16,6 @@ pipeline {
       }
     }
 
-    stage('Install gcloud CLI') {
-  steps {
-    sh '''
-      if ! command -v gcloud >/dev/null 2>&1; then
-        echo "Installing gcloud CLI..."
-        curl -sSL https://sdk.cloud.google.com | bash
-        source "$HOME/google-cloud-sdk/path.bash.inc"
-        gcloud version
-      else
-        echo "gcloud already installed."
-      fi
-    '''
-  }
-}
-
     stage('Auth with GCP') {
       steps {
         withCredentials([file(credentialsId: 'gcp-sa-key', variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
