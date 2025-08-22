@@ -46,16 +46,25 @@ assandra-gke-jenkins/
 
 
 
+## Project Highlights
+
+Deploys an Apache Cassandra cluster using Helm, idiomatic to Kubernetes
+
+Uses Jenkins Pipelines to automate the process
+
+Leverages Cloud Shell tools for seamless DevOps workflows
+
+Includes safe teardown to avoid idle resources and cost overrun 
+
+
 ---
 
 ##  Quick Start
-
-
-
 ```bash
+1. clone 
 git clone https://github.com/Harsha9989195/cassandra-gke-jenkins.git
-cd cassandra-gke-jenkins
 
+cd cassandra-gke-jenkins
 
 2. Provision GKE Cluster
 bash ./scripts/01_create_cluster.sh
@@ -85,7 +94,4 @@ Copy the contents of the Jenkinsfile into a Pipeline job and trigger the build.
 
 6. Clean-Up Resources
 bash ./scripts/99_cleanup.sh
-----
-
-
 
