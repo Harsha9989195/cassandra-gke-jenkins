@@ -1,5 +1,9 @@
 pipeline {
-  agent any
+  agent {
+    docker {
+      image 'google/cloud-sdk:slim'
+    }
+  }
 
   environment {
     PROJECT_ID = 'white-inscriber-469614-a1'          
