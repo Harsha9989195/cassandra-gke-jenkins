@@ -1,38 +1,66 @@
 pipeline {
   agent any
-  options { timeout(time: 5, unit: 'MINUTES') }
+
+  environment {
+    PROJECT_ID = 'white-inscriber-469614-a1'          
+    REGION     = 'us-central1'
+    ZONE       = 'us-central1-a'
+    CLUSTER    = 'cassandra-gke'
+  }
+
   stages {
-    stage('Check Cassandra Version') {
+
+    stage('Clone Repo') {
       steps {
-        sh '''
-          set -e
-          KVER="v1.30.3"
-          [ -x ./kubectl ] || { curl -sSfL https://dl.k8s.io/release/${KVER}/bin/linux/amd64/kubectl -o kubectl; chmod +x kubectl; }
-          NS=cassandra
-          POD=$(./kubectl -n $NS get pod -l app.kubernetes.io/name=cassandra -o jsonpath='{.items[0].metadata.name}')
-          PASS=$(./kubectl -n $NS get secret cassandra -o jsonpath='{.data.cassandra-password}' | base64 -d)
-          ./kubectl -n $NS exec -i "$POD" -- cqlsh -u cassandra -p "$PASS" -e "SELECT release_version FROM system.local;"
-        '''
+        git 'https://github.com/Harsha9989195/cassandra-gke-jenkins.git'
       }
     }
-    stage('Feed Data (quick)') {
+
+    stage('Auth with GCP') {
       steps {
-        sh '''
-          set -e
-          NS=cassandra
-          POD=$(./kubectl -n $NS get pod -l app.kubernetes.io/name=cassandra -o jsonpath='{.items[0].metadata.name}')
-          PASS=$(./kubectl -n $NS get secret cassandra -o jsonpath='{.data.cassandra-password}' | base64 -d)
+        withCredentials([file(credentialsId: 'gcp-sa-key', variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
+          sh '''
+            gcloud auth activate-service-account --key-file=$GOOGLE_APPLICATION_CREDENTIALS
+            gcloud config set project $PROJECT_ID
+            gcloud config set compute/zone $ZONE
+          '''
+        }
+      }
+    }
 
-          # create keyspace & table (use fully-qualified names to avoid USE)
-          ./kubectl -n $NS exec -i "$POD" -- cqlsh -u cassandra -p "$PASS" -e "CREATE KEYSPACE IF NOT EXISTS demo WITH replication={'class':'SimpleStrategy','replication_factor':1};"
-          ./kubectl -n $NS exec -i "$POD" -- cqlsh -u cassandra -p "$PASS" -e "CREATE TABLE IF NOT EXISTS demo.users (id int PRIMARY KEY, name text);"
+    stage('Create GKE Cluster') {
+      steps {
+        sh 'bash scripts/01_create_cluster.sh'
+      }
+    }
 
-          # insert + verify
-          ./kubectl -n $NS exec -i "$POD" -- cqlsh -u cassandra -p "$PASS" -e "INSERT INTO demo.users (id,name) VALUES (999,'demo-row');"
-          ./kubectl -n $NS exec -i "$POD" -- cqlsh -u cassandra -p "$PASS" -e "SELECT id,name FROM demo.users WHERE id=999;"
-        '''
+    stage('Deploy Cassandra on GKE') {
+      steps {
+        sh 'bash scripts/02_deploy_cassandra.sh'
+      }
+    }
+
+    stage('Smoke Test Cassandra') {
+      steps {
+        sh 'bash scripts/03_smoke_cql.sh'
+      }
+    }
+
+    stage('Feed Data to Cassandra') {
+      steps {
+        sh 'bash scripts/05_feed_data.sh'
       }
     }
   }
+
+  post {
+    success {
+      echo '✅ All stages completed successfully. Cassandra is running and data is inserted.'
+    }
+    failure {
+      echo '❌ Pipeline failed. Check the logs for errors.'
+    }
+  }
 }
+
 
