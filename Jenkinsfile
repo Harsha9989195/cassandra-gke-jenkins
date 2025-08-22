@@ -23,23 +23,21 @@ spec:
 
   }
 
-  stages {
-    stage('Auth with GCP') {
-      steps {
-        container('gcloud') {
-          withCredentials([file(credentialsId: 'gcp-sa-key', variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
-            sh '''
-              echo "[INFO] Authenticating to GCP..."
-              gcloud auth activate-service-account --key-file=$GOOGLE_APPLICATION_CREDENTIALS
-              gcloud config set project $PROJECT_ID
-              gcloud config set compute/zone $ZONE
-              gcloud container clusters get-credentials $CLUSTER
-              kubectl get nodes
-            '''
-          }
-        }
+ stage('Auth with GCP') {
+  steps {
+    container('gcloud') {
+      withCredentials([file(credentialsId: 'gcp-sa-key', variable: 'GCLOUD_KEY')]) {
+        sh '''
+          echo "[INFO] Authenticating to GCP..."
+          gcloud auth activate-service-account --key-file=$GCLOUD_KEY
+          gcloud config set project $PROJECT_ID
+          gcloud config set compute/zone $ZONE
+          gcloud container clusters get-credentials $CLUSTER
+        '''
       }
     }
+  }
+}
     
 stage('Create GKE Cluster') {
       steps {
