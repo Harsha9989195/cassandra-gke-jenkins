@@ -17,60 +17,58 @@ pipeline {
           args '-u root:root'
         }
       }
-
-  stages {
-    stage('Clone Repo') {
-      steps {
-        git branch: 'main', url: 'https://github.com/Harsha9989195/cassandra-gke-jenkins.git'
-
+      environment {
+        HOME = '/root'
       }
-    }
 
-    stage('Auth with GCP') {
-      steps {
-        withCredentials([file(credentialsId: 'gcp-sa-key', variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
-          sh '''
-            gcloud auth activate-service-account --key-file=$GOOGLE_APPLICATION_CREDENTIALS
-            gcloud config set project $PROJECT_ID
-            gcloud config set compute/zone $ZONE
-          '''
+      stages {
+        stage('Clone Repo') {
+          steps {
+            git url: 'https://github.com/Harsha9989195/cassandra-gke-jenkins.git', branch: 'main'
+          }
         }
-      }
-    }
 
-    stage('Create GKE Cluster') {
-      steps {
-        sh 'bash scripts/01_create_cluster.sh'
-      }
-    }
+        stage('Auth with GCP') {
+          steps {
+            sh '''
+              echo "$GCP_KEY" > /tmp/key.json
+              gcloud auth activate-service-account --key-file=/tmp/key.json
+              gcloud config set project $PROJECT_ID
+              gcloud auth configure-docker $REGION-docker.pkg.dev
+            '''
+          }
+        }
 
-    stage('Deploy Cassandra on GKE') {
-      steps {
-        sh 'bash scripts/02_deploy_cassandra.sh'
-      }
-    }
+        stage('Create GKE Cluster') {
+          steps {
+            sh 'chmod +x scripts/create-cluster.sh && ./scripts/create-cluster.sh'
+          }
+        }
 
-    stage('Smoke Test Cassandra') {
-      steps {
-        sh 'bash scripts/03_smoke_cql.sh'
-      }
-    }
+        stage('Deploy Cassandra') {
+          steps {
+            sh 'chmod +x scripts/deploy-cassandra.sh && ./scripts/deploy-cassandra.sh'
+          }
+        }
 
-    stage('Feed Data to Cassandra') {
-      steps {
-        sh 'bash scripts/05_feed_data.sh'
+        stage('Feed Data') {
+          steps {
+            sh 'chmod +x scripts/feed-data.sh && ./scripts/feed-data.sh'
+          }
+        }
       }
     }
   }
 
   post {
     success {
-      echo '✅ All stages completed successfully. Cassandra is running and data is inserted.'
+      echo "✅ Cassandra deployed and data inserted successfully!"
     }
     failure {
-      echo '❌ Pipeline failed. Check the logs for errors.'
+      echo "❌ Something failed. Check logs above."
     }
   }
 }
+
 
 
