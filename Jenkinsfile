@@ -9,10 +9,10 @@ pipeline {
   }
 
   stages {
-
     stage('Clone Repo') {
       steps {
-        git 'https://github.com/Harsha9989195/cassandra-gke-jenkins.git'
+        git branch: 'main', url: 'https://github.com/Harsha9989195/cassandra-gke-jenkins.git'
+
       }
     }
 
