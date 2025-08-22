@@ -1,6 +1,6 @@
 #  Cassandra on GKE + Jenkins CI/CD Pipeline
 
-This project automates the deployment of a **Cassandra NoSQL database cluster** on **Google Kubernetes Engine (GKE)**, and feeds data into it using a **Jenkins-driven CI/CD pipeline**.
+This project automates the deployment of a **Cassandra NoSQL database cluster** on **Google Kubernetes Engine (GKE)**, and feeds  data into it , automate eveything by  **Jenkins-driven CI/CD pipeline**.
 
 ---
 
