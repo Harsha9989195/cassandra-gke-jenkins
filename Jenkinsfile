@@ -1,9 +1,23 @@
-pipeline {
+  pipeline {
   agent {
-   docker {
-      image 'us-central1-docker.pkg.dev/white-inscriber-469614-a1/jenkins-images/jenkins-gcloud-kubectl'
+    kubernetes {
+      yaml """
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    some-label: cassandra-pipeline
+spec:
+  containers:
+  - name: jenkins-gcloud
+    image: us-central1-docker.pkg.dev/white-inscriber-469614-a1/jenkins-images/jenkins-gcloud-kubectl
+    command:
+    - cat
+    tty: true
+"""
     }
   }
+
 
   environment {
     PROJECT_ID = 'white-inscriber-469614-a1'          
