@@ -17,7 +17,6 @@ echo
 echo "Open Jenkins:"
 echo "kubectl -n jenkins port-forward svc/jenkins 8080:8080"
 echo "Then Web Preview → port 8080 → login admin/admin123"
-EOF
 
 chmod +x scripts/04_install_jenkins.sh
 ./scripts/04_install_jenkins.sh
