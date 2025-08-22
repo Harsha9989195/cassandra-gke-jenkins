@@ -1,9 +1,5 @@
 pipeline {
-  agent {
-    docker {
-      image 'google/cloud-sdk:slim'
-    }
-  }
+  agent any
 
   environment {
     PROJECT_ID = 'white-inscriber-469614-a1'          
@@ -17,6 +13,24 @@ pipeline {
       steps {
         git branch: 'main', url: 'https://github.com/Harsha9989195/cassandra-gke-jenkins.git'
 
+      }
+    }
+
+    stage('Install gcloud CLI') {
+      steps {
+        sh '''
+          if ! command -v gcloud >/dev/null 2>&1; then
+            echo "Installing Google Cloud SDK..."
+            sudo apt-get update && sudo apt-get install -y apt-transport-https ca-certificates gnupg curl
+            echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] http://packages.cloud.google.com/apt cloud-sdk main" | \
+              sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
+            curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | \
+              sudo apt-key --keyring /usr/share/keyrings/cloud.google.gpg add -
+            sudo apt-get update && sudo apt-get install -y google-cloud-sdk
+          else
+            echo "gcloud is already installed."
+          fi
+        '''
       }
     }
 
