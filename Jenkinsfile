@@ -1,6 +1,6 @@
 pipeline {
-  agent any
-  docker {
+  agent {
+   docker {
       image 'us-central1-docker.pkg.dev/white-inscriber-469614-a1/jenkins-images/jenkins-gcloud-kubectl'
     }
   }
