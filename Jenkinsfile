@@ -1,5 +1,11 @@
 pipeline {
-  agent any
+  agent {
+    dockerContainer {
+      image 'us-central1-docker.pkg.dev/white-inscriber-469614-a1/jenkins-images/jenkins-gcloud-kubectl'
+      args '-u root:root'
+    }
+  }
+
 
   environment {
     PROJECT_ID = "white-inscriber-469614-a1"
